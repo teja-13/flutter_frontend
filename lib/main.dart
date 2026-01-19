@@ -11,7 +11,7 @@ void main() {
 
 /// ========== CONFIG ==========
 /// Replace with your backend URL:
-const String BACKEND_URL = 'http://10.10.42.248:5000'; // android emulator
+const String BACKEND_URL = 'https://flutter-backend-uaim.onrender.com'; // android emulator
 // const String BACKEND_URL = 'http://localhost:5000'; // iOS simulator
 // const String BACKEND_URL = 'http://YOUR_IP:5000'; // real device
 /// ============================
