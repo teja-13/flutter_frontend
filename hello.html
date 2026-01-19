@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Splash Screen */
+        .splash-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
+            color: white;
+        }
+
+        .splash-icon {
+            font-size: 100px;
+            margin-bottom: 20px;
+        }
+
+        .splash-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .splash-loader {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* App Bar */
+        .app-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .app-title {
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        .app-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            color: #666;
+        }
+
+        .icon-btn:hover {
+            background: rgba(0,0,0,0.1);
+        }
+
+        /* Auth Screen */
+        .auth-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            padding-top: 80px;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            padding: 32px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            background: #2196F3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .auth-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 24px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 2px rgba(33,150,243,0.1);
+        }
+
+        .form-input::placeholder {
+            color: #999;
+        }
+
+        .btn-primary {
+            width: 100%;
+            height: 45px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #1976D2;
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-loader {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        .toggle-link {
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .toggle-link button {
+            background: none;
+            border: none;
+            color: #2196F3;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* Error Message */
+        .error-msg {
+            background: #fee;
+            border: 1px solid #f66;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Home Screen */
+        .home-container {
+            padding: 80px 16px 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 16px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+        }
+
+        .search-btn {
+            width: 56px;
+            height: 56px;
+            border: none;
+            background: #2196F3;
+            color: white;
+            border-radius: 12px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-btn:hover {
+            background: #1976D2;
+        }
+
+        .weather-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .city-name {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .weather-icon {
+            font-size: 80px;
+            color: #2196F3;
+            margin-bottom: 16px;
+        }
+
+        .temp-main {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .weather-desc {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .weather-stats {
+            display: flex;
+            justify-content: space-around;
+            gap: 16px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-icon {
+            font-size: 30px;
+            color: #2196F3;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-icon {
+            font-size: 100px;
+            opacity: 0.3;
+            margin-bottom: 16px;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+        }
+
+        .loader {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e3f2fd;
+            border-top: 4px solid #2196F3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Profile Screen */
+        .profile-container {
+            padding: 80px 16px 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: #2196F3;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .profile-email {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 24px 0 12px;
+        }
+
+        .history-item {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .delete-btn {
+            width: 100%;
+            height: 48px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 24px;
+        }
+
+        .delete-btn:hover {
+            background: #d32f2f;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .weather-stats {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+
+        /* Hide screens */
+        .screen.hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="splash-screen screen">
+        <div class="splash-icon">☁️</div>
+        <div class="splash-title">Weather App</div>
+        <div class="splash-loader"></div>
+    </div>
+
+    <!-- Auth Screen -->
+    <div id="authScreen" class="screen hidden">
+        <div class="app-bar">
+            <div class="app-title"></div>
+        </div>
+        <div class="auth-container">
+            <div class="auth-card">
+                <div id="authIcon" class="auth-icon">👤</div>
+                <h2 id="authTitle" class="auth-title">Login</h2>
+                
+                <div id="nameField" class="form-group" style="display: none;">
+                    <input type="text" id="nameInput" class="form-input" placeholder="Name">
+                </div>
+                
+                <div class="form-group">
+                    <input type="email" id="emailInput" class="form-input" placeholder="Email" required>
+                </div>
+                
+                <div class="form-group">
+                    <input type="password" id="passwordInput" class="form-input" placeholder="Password" required>
+                </div>
+                
+                <div id="errorMsg" class="error-msg" style="display: none;">
+                    <span>⚠️</span>
+                    <span id="errorText"></span>
+                </div>
+                
+                <button id="submitBtn" class="btn-primary">Login</button>
+                
+                <div class="toggle-link">
+                    <button id="toggleBtn">Don't have an account? Sign up</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Home Screen -->
+    <div id="homeScreen" class="screen hidden">
+        <div class="app-bar">
+            <div class="app-title">Weather</div>
+            <div class="app-actions">
+                <button class="icon-btn" onclick="showProfile()" title="Profile">👤</button>
+                <button class="icon-btn" onclick="logout()" title="Logout">🚪</button>
+            </div>
+        </div>
+        
+        <div class="home-container">
+            <div class="search-row">
+                <input type="text" id="cityInput" class="search-input" placeholder="Enter city name">
+                <button class="search-btn" onclick="fetchWeather()">🔍</button>
+            </div>
+            
+            <div id="weatherContent">
+                <div class="empty-state">
+                    <div class="empty-icon">☁️</div>
+                    <div>Search for a city to see weather</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Screen -->
+    <div id="profileScreen" class="screen hidden">
+        <div class="app-bar">
+            <button class="icon-btn" onclick="showHome()">←</button>
+            <div class="app-title">Profile</div>
+            <div></div>
+        </div>
+        
+        <div class="profile-container">
+            <div id="profileContent" style="text-align: center; padding: 60px;">
+                <div class="loader"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - Replace with your backend
+        const BACKEND_URL = 'https://flutter-backend-uaim.onrender.com';
+        
+        // App State
+        let currentUser = null;
+        let isLogin = true;
+        let weatherData = null;
+        let token = localStorage.getItem('jwt') || null;
+
+        // DOM Elements
+        const screens = {
+            splash: document.getElementById('splashScreen'),
+            auth: document.getElementById('authScreen'),
+            home: document.getElementById('homeScreen'),
+            profile: document.getElementById('profileScreen')
+        };
+
+        const elements = {
+            nameInput: document.getElementById('nameInput'),
+            emailInput: document.getElementById('emailInput'),
+            passwordInput: document.getElementById('passwordInput'),
+            submitBtn: document.getElementById('submitBtn'),
+            toggleBtn: document.getElementById('toggleBtn'),
+            authTitle: document.getElementById('authTitle'),
+            authIcon: document.getElementById('authIcon'),
+            errorMsg: document.getElementById('errorMsg'),
+            errorText: document.getElementById('errorText'),
+            nameField: document.getElementById('nameField'),
+            cityInput: document.getElementById('cityInput'),
+            weatherContent: document.getElementById('weatherContent'),
+            profileContent: document.getElementById('profileContent')
+        };
+
+        // Screen Navigation
+        function showScreen(screenName) {
+            Object.values(screens).forEach(screen => screen.classList.add('hidden'));
+            screens[screenName].classList.remove('hidden');
+        }
+
+        function showAuth() { showScreen('auth'); }
+        function showHome() { showScreen('home'); }
+        function showProfile() { showScreen('profile'); }
+
+        // Auth Functions
+        function toggleAuthMode() {
+            isLogin = !isLogin;
+            elements.authTitle.textContent = isLogin ? 'Login' : 'Sign Up';
+            elements.authIcon.textContent = isLogin ? '🔐' : '➕';
+            elements.nameField.style.display = isLogin ? 'none' : 'block';
+            elements.toggleBtn.textContent = isLogin ? 
+                "Don't have an account? Sign up" : 
+                'Already have an account? Login';
+            hideError();
+        }
+
+        function showError(msg) {
+            elements.errorText.textContent = msg;
+            elements.errorMsg.style.display = 'flex';
+        }
+
+        function hideError() {
+            elements.errorMsg.style.display = 'none';
+        }
+
+        async function submitAuth() {
+            const email = elements.emailInput.value.trim();
+            const password = elements.passwordInput.value;
+            const name = elements.nameInput.value.trim();
+
+            if (!email || !password) {
+                showError('Please fill all fields');
+                return;
+            }
+
+            if (!isLogin && (!name || name.length < 2)) {
+                showError('Name must be at least 2 characters');
+                return;
+            }
+
+            if (!isLogin && (!email.includes('@'))) {
+                showError('Enter valid email');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters');
+                return;
+            }
+
+            elements.submitBtn.disabled = true;
+            elements.submitBtn.innerHTML = '<div class="btn-loader"></div>Login';
+
+            try {
+                const url = isLogin 
+                    ? `${BACKEND_URL}/api/auth/login`
+                    : `${BACKEND_URL}/api/auth/register`;
+
+                const body = isLogin 
+                    ? { email, password }
+                    : { name, email, password };
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    token = data.token;
+                    currentUser = data.user || {};
+                    localStorage.setItem('jwt', token);
+                    localStorage.setItem('user', JSON.stringify(currentUser));
+                    showHome();
+                } else {
+                    showError(data.message || data.errors || 'Login failed');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                elements.submitBtn.disabled = false;
+                elements.submitBtn.innerHTML = isLogin ? 'Login' : 'Sign Up';
+            }
+        }
+
+        // Weather Functions
+        async function fetchWeather(city = elements.cityInput.value.trim()) {
+            if (!city) return;
+
+            const weatherContent = elements.weatherContent;
+            weatherContent.innerHTML = '<div class="loading"><div class="loader"></div></div>';
+
+            try {
+                if (!token) throw new Error('Not authenticated');
+
+                const url = `${BACKEND_URL}/api/weather?city=${encodeURIComponent(city)}`;
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    weatherData = await response.json();
+                    renderWeather();
+                } else {
+                    const data = await response.json();
+                    weatherContent.innerHTML = `
+                        <div style="background: #fee; border: 1px solid #f66; border-radius: 12px; padding: 20px; margin: 16px; display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 20px;">⚠️</span>
+                            <span style="color: #c33; font-size: 16px;">${data.message || 'Failed to fetch weather'}</span>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                elements.weatherContent.innerHTML = `
+                    <div style="background: #fee; border: 1px solid #f66; border-radius: 12px; padding: 20px; margin: 16px; display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 20px;">⚠️</span>
+                        <span style="color: #c33; font-size: 16px;">Network error: ${error.message}</span>
+                    </div>
+                `;
+            }
+        }
+
+        function renderWeather() {
+            if (!weatherData) return;
+
+            const city = weatherData.city || '';
+            const country = weatherData.country || '';
+            const temp = weatherData.temp?.toFixed(1) || 0;
+            const feelsLike = weatherData.feels_like?.toFixed(1) || 0;
+            const desc = weatherData.weather || '';
+            const humidity = weatherData.humidity || 0;
+            const wind = weatherData.wind?.toFixed(1) || 0;
+
+            const icon = getWeatherIcon(desc);
+            elements.weatherContent.innerHTML = `
+                <div class="weather-card">
+                    <div class="city-name">${city}, ${country}</div>
+                    <div class="weather-icon">${icon}</div>
+                    <div class="temp-main">${temp} °C</div>
+                    <div class="weather-desc">${desc}</div>
+                    <div class="weather-stats">
+                        <div class="stat-item">
+                            <div class="stat-icon">🌡️</div>
+                            <div class="stat-label">Feels Like</div>
+                            <div class="stat-value">${feelsLike}°C</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">💧</div>
+                            <div class="stat-label">Humidity</div>
+                            <div class="stat-value">${humidity}%</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">💨</div>
+                            <div class="stat-label">Wind</div>
+                            <div class="stat-value">${wind} m/s</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getWeatherIcon(weather) {
+            const w = weather.toLowerCase();
+            if (w.includes('clear')) return '☀️';
+            if (w.includes('cloud')) return '☁️';
+            if (w.includes('rain')) return '🌧️';
+            if (w.includes('snow')) return '❄️';
+            if (w.includes('thunder')) return '⛈️';
+            return '🌤️';
+        }
+
+        // Profile Functions
+        async function loadProfile() {
+            elements.profileContent.innerHTML = '<div class="loading" style="padding: 60px;"><div class="loader"></div></div>';
+
+            try {
+                if (!token) throw new Error('Not authenticated');
+
+                const response = await fetch(`${BACKEND_URL}/api/profile/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    renderProfile(data);
+                } else {
+                    throw new Error('Failed to load profile');
+                }
+            } catch (error) {
+                elements.profileContent.innerHTML = `
+                    <div style="color: #f66; font-size: 16px; padding: 60px; text-align: center;">
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function renderProfile(data) {
+            const name = data.name || '?';
+            const email = data.email || '';
+            const history = data.weatherSearchHistory || [];
+
+            const avatar = name[0]?.toUpperCase() || '?';
+
+            let historyHtml = '';
+            if (history.length === 0) {
+                historyHtml = `
+                    <div style="padding: 20px; text-align: center; color: #999;">
+                        No search history yet
+                    </div>
+                `;
+            } else {
+                historyHtml = history.map(search => {
+                    const city = search.city || '';
+                    const date = formatDate(search.searchedAt);
+                    return `
+                        <div class="history-item">
+                            <span style="font-size: 20px;">📍</span>
+                            <div>
+                                <div style="font-weight: 500;">${city}</div>
+                                <div style="font-size: 14px; color: #666;">${date}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            elements.profileContent.innerHTML = `
+                <div class="profile-card">
+                    <div class="profile-avatar">${avatar}</div>
+                    <div class="profile-name">${name}</div>
+                    <div class="profile-email">${email}</div>
+                </div>
+                
+                <h3 class="section-title">Recent Searches</h3>
+                <div>${historyHtml}</div>
+                
+                <button class="delete-btn" onclick="deleteAccount()">🗑️ Delete Account</button>
+            `;
+        }
+
+        function formatDate(dateStr) {
+            try {
+                const date = new Date(dateStr);
+                return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+            } catch {
+                return dateStr || '';
+            }
+        }
+
+        async function deleteAccount() {
+            if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    localStorage.clear();
+                    showAuth();
+                } else {
+                    alert('Failed to delete account');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            token = null;
+            currentUser = null;
+            showAuth();
+        }
+
+        // Event Listeners
+        elements.submitBtn.addEventListener('click', submitAuth);
+        elements.toggleBtn.addEventListener('click', toggleAuthMode);
+        elements.cityInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') fetchWeather();
+        });
+
+        // Enter key on auth inputs
+        elements.emailInput.addEventListener('keypress', (e) => e.key === 'Enter' && submitAuth());
+        elements.passwordInput.addEventListener('keypress', (e) => e.key === 'Enter' && submitAuth());
+
+        // Initialize App
+        async function init() {
+            // Simulate splash delay
+            setTimeout(async () => {
+                token = localStorage.getItem('jwt');
+                if (token) {
+                    currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                    showHome();
+                } else {
+                    showAuth();
+                }
+            }, 2000);
+        }
+
+        // Start app
+        init();
+    </script>
+</body>
+</html>
